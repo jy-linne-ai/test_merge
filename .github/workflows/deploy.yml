@@ -17,9 +17,9 @@ env:
   instance_id: ${{ (inputs || github.event.inputs).instance_id }}
   environment: ${{
     (inputs || github.event.inputs).instance_id == 'uat' && 'UAT' ||
-    contains((inputs || github.event.inputs).instance_id, 'ax') && format('Dev-{0}', (inputs || github.event.inputs).instance_id) ||
-    (inputs || github.event.inputs).instance_id == 'bx' && format('Dev-{0}', (inputs || github.event.inputs).instance_id) ||
-    (inputs || github.event.inputs).instance_id
+    contains((inputs || github.event.inputs).instance_id, 'ax') && 'DEV' ||
+    (inputs || github.event.inputs).instance_id == 'bx' && 'DEV'||
+    (inputs || github.event.inputs).instance_id == 'prod' && 'PROD'
     }}
 
 jobs:
