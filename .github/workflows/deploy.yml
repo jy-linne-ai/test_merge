@@ -36,9 +36,15 @@ jobs:
             await github.rest.repos.createDeployment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: `${{ github.ref }}`,
+              ref: context.ref,
               environment: `${{ env.environment }}`,
               auto_merge: false,
               required_contexts: [],
-              payload: JSON.stringify({ deployment_status: "success" })
+              task: 'deploy',
+              description: `Deployment to ${process.env.environment}`,
+              payload: JSON.stringify({ 
+                deployment_status: "success",
+                instance_id: process.env.instance_id,
+                deployed_at: new Date().toISOString()
+              })
             });
