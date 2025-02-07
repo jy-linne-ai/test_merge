@@ -17,9 +17,9 @@ env:
   instance_id: ${{ (inputs || github.event.inputs).instance_id }}
   environment: ${{
     (inputs || github.event.inputs).instance_id == 'uat' && 'UAT' ||
-    contains((inputs || github.event.inputs).instance_id, 'ax') && 'DEV' ||
-    (inputs || github.event.inputs).instance_id == 'bx' && 'DEV'||
-    (inputs || github.event.inputs).instance_id == 'prod' && 'PROD'
+    contains((inputs || github.event.inputs).instance_id, 'ax') && format('Dev-{0}', (inputs || github.event.inputs).instance_id) ||
+    (inputs || github.event.inputs).instance_id == 'bx' && format('Dev-{0}', (inputs || github.event.inputs).instance_id) ||
+    (inputs || github.event.inputs).instance_id
     }}
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: context.ref,
-              environment: ${{ env.environment }},
+              environment: `${{ env.environment }}`,
               auto_merge: false,
               required_contexts: [],
               payload: JSON.stringify({ deployment_status: "success" })
