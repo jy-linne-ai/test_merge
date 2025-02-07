@@ -1,0 +1,66 @@
+name: build
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        required: true
+        default: "bx"
+  push:
+    branches: [main, production]
+    tags: [
+      uat, prod,
+      ax1 , ax2 , ax3 , ax4 , ax5 , ax6 , ax7 , ax8 , ax9 , ax10,
+      ax11, ax12, ax13, ax14, ax15, ax16, ax17, ax18, ax19, ax20,
+    ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.vars.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: rlespinasse/git-commit-data-action@v1
+
+      - uses: josStorer/get-current-time@v2
+        id: current-time
+        with:
+          format: "YYYY-MM-DDTHH:mm:ss.SSSZ"
+          utcOffset: "+09:00"
+
+      - name: update variables
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Using workflow dispatch image tag ${{ github.event.inputs.image_tag }}"
+            echo "image_tag=${{ github.event.inputs.image_tag }}" >> $GITHUB_OUTPUT
+          else
+            case '${{ github.ref_type }}' in
+              branch)
+                case '${{ github.ref_name }}' in
+                  main)
+                    echo "image_tag=bx" >> $GITHUB_OUTPUT
+                    ;;
+                  production)
+                    echo "image_tag=rc" >> $GITHUB_OUTPUT
+                    ;;
+                esac
+                ;;
+              tag)
+                echo "image_tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+                ;;
+            esac
+          fi
+
+  deploy:
+    needs: [build]
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      instance_id: ${{ needs.build.outputs.image_tag }}
